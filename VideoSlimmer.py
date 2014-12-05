@@ -76,7 +76,7 @@ try:
 
 except IndexError:
 
-    print "Please supply your preferred language e.g. eng for english, for other language codes go here http://en.wikipedia.org/wiki/List_of_ISO_639-2_codes"
+    print "Please supply your preferred language e.g. 'eng' for english, for other language codes go here http://en.wikipedia.org/wiki/List_of_ISO_639-2_codes"
     sys.exit()
 
 for root, dirs, files in os.walk(in_dir):
