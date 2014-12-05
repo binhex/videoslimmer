@@ -8,7 +8,9 @@ Installation
 
 1. Install Python 2.6.x or greater (not version 3.x)
 
-2. Run from terminal/command prompt with the following format:-
+2. Install mkvtoolnix 6.5.0 or greater
+
+3. Run from terminal/command prompt, syntax and examples below
 
 Syntax
 ------
@@ -21,11 +23,11 @@ Examples
 
 Linux platform		
 ```
-"python2 VideoSlimmer.py /media/movies/ eng"
+python2 VideoSlimmer.py /media/movies/ eng
 ```
 Windows	platform	
 ```
-"VideoSlimmer.py c:\media\movies\ eng"
+VideoSlimmer.py c:\media\movies\ eng
 ```
 
 Language codes can be found here http://en.wikipedia.org/wiki/List_of_ISO_639-2_codes
