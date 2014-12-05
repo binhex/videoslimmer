@@ -12,15 +12,21 @@ Installation
 
 Syntax
 ------
-
+```
 VideoSlimmer.py <path to your media collection> <preferred language code>
+```
 
 Examples
 --------
 
-Linux platform		"python2 VideoSlimmer.py /media/movies/ eng"
-
-Windows	platform	"VideoSlimmer.py c:\media\movies\ eng"
+Linux platform		
+```
+"python2 VideoSlimmer.py /media/movies/ eng"
+```
+Windows	platform	
+```
+"VideoSlimmer.py c:\media\movies\ eng"
+```
 
 Language codes can be found here http://en.wikipedia.org/wiki/List_of_ISO_639-2_codes
 
