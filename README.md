@@ -1,4 +1,4 @@
-videoslimmer
+VideoSlimmer
 ============
 
 Description
@@ -16,29 +16,30 @@ Installation
 Syntax
 ------
 ```
-VideoSlimmer.py <path to your media collection> <language code>
+VideoSlimmer.py [--mkvmerge <path>] [--media <path>] [--lang <code>] [--log <level>] [--version]
 ```
 
 Examples
 --------
 
-Linux platform		
+<u>Linux platform</u>
 ```
-python2 VideoSlimmer.py /media/movies/ eng
+python2 VideoSlimmer.py --mkvmerge /opt/mkvtoolnix/mkvmerge --media /media/movies --lang eng
 ```
-Windows	platform	
+
+<u>Windows	platform</u>	
 ```
-VideoSlimmer.py c:\media\movies\ eng
+VideoSlimmer.py --mkvmerge "c:\Program Files\mkvtoolnix\mkvmerge.exe --media D:\media\movies --lang eng
 ```
 VideoSlimmer also supports UNC paths
 ```
-VideoSlimmer.py \\mediaserver\media\movies\ eng
+VideoSlimmer.py --mkvmerge "c:\Program Files\mkvtoolnix\mkvmerge.exe --media \\medaserver\media\movies --lang eng
 ```
 
-Language codes can be found here http://en.wikipedia.org/wiki/List_of_ISO_639-2_codes
+Language codes can be found [here](http://en.wikipedia.org/wiki/List_of_ISO_639-2_codes)
 
 Notes
 -----
 
-VideoSlimmer will NOT remove audio or subtitles unless there is a match for the specified language.
-VideoSlimmer IS recursive, thus all files/folders will be processed from the root defined media folder.
+- VideoSlimmer will NOT remove audio or subtitles unless there is a match for the specified language.
+- VideoSlimmer IS recursive, thus all files/folders will be processed from the root defined media folder.
