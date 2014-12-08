@@ -29,11 +29,11 @@ python2 VideoSlimmer.py --mkvmerge /opt/mkvtoolnix/mkvmerge --media /media/movie
 
 <u>Windows	platform</u>	
 ```
-VideoSlimmer.py --mkvmerge "c:\Program Files\mkvtoolnix\mkvmerge.exe --media D:\media\movies --lang eng
+VideoSlimmer.py --mkvmerge "c:\Program Files\mkvtoolnix\mkvmerge.exe" --media D:\media\movies --lang eng
 ```
 VideoSlimmer also supports UNC paths
 ```
-VideoSlimmer.py --mkvmerge "c:\Program Files\mkvtoolnix\mkvmerge.exe --media \\medaserver\media\movies --lang eng
+VideoSlimmer.py --mkvmerge "c:\Program Files\mkvtoolnix\mkvmerge.exe" --media \\medaserver\media\movies --lang eng
 ```
 
 Language codes can be found [here](http://en.wikipedia.org/wiki/List_of_ISO_639-2_codes)
