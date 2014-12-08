@@ -10,13 +10,13 @@ Installation
 ------------
 
 1. Install Python 2.6.0 or greater (not version 3.x)
-2. Install mkvtoolnix 6.5.0 or greater
+2. Install MKVToolnix 6.5.0 or greater
 3. Run from terminal/command prompt, syntax and examples below
 
 Syntax
 ------
 ```
-VideoSlimmer.py [--mkvmerge <path>] [--media <path>] [--lang <code>] [--log <level>] [--version]
+VideoSlimmer.py --mkvmerge <path> --media <path> --lang <code> [--log <level>] [--version]
 ```
 
 Examples
