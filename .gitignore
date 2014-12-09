@@ -1,4 +1,8 @@
 # Ignore comments file
 todo.txt
+
 # Ignore compiled Python scripts
 *.pyc
+
+# Ignore logs file
+*.log

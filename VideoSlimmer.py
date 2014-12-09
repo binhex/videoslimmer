@@ -209,7 +209,7 @@ def videoslimmer():
 
             #decode filename to unicode
             f = string_decode(f)        
-
+            
             #filter out non mkv files
             if not f.endswith(".mkv"):
                 
@@ -225,9 +225,9 @@ def videoslimmer():
             if os.path.exists(temp_file):
                               
                 os.remove(temp_file)
-                vs_log.info(u"Deleted temporary file %s" % (temp_file))
+                vs_log.info(u"Deleted temporary file %s" % (string_decode(temp_file)))
 
-            vs_log.info(u"processing file %s" % (path))                
+            vs_log.info("processing file %s" % (string_decode(path)))                
             
             #build command line
             cmd = [mkvmerge_cli, "--identify-verbose", path]
@@ -238,7 +238,7 @@ def videoslimmer():
             
             if mkvmerge.returncode != 0:
                 
-                vs_log.warning(u"mkvmerge failed to identify file %s" % (path))
+                vs_log.warning(u"mkvmerge failed to identify file %s" % (string_decode(path)))
                 continue
 
             #create empty lists for audio and subs
@@ -419,7 +419,7 @@ def videoslimmer():
                                   
                     #if failed then delete temp file                
                     os.remove(temp_file)
-                    vs_log.info(u"Deleted temporary file %s" % (temp_file))               
+                    vs_log.info(u"Deleted temporary file %s" % (string_decode(temp_file)))
                                   
                 continue
 
