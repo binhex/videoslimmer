@@ -1,5 +1,5 @@
 #set videoslimmer version numbers
-latest_vs_version = "1.0.0"
+latest_vs_version = "1.0.1"
 
 import os
 import sys
@@ -10,25 +10,85 @@ import StringIO
 import subprocess
 from distutils.version import StrictVersion
 
-#define path to videoslimmer root path
-videoslimmer_root_dir = os.path.dirname(os.path.realpath(__file__)).decode("utf-8")
+#define path to videoslimmer root
+videoslimmer_root_dir_uni = os.path.dirname(os.path.realpath(__file__)).decode("utf-8")
+
+#define path to videoslimmer logs folder
+videoslimmer_logs_dir_uni = os.path.join(videoslimmer_root_dir_uni, u"logs")
 
 #check version of python is 2.6.x or 2.7.x
 if sys.version_info<(2,6,0) or sys.version_info>=(3,0,0):
 
-    sys.stderr.write(u"You need Python 2.6.x/2.7.x installed to run videoslimmer, your running version %s" % (sys.version_info))
+    sys.stderr.write(u"videoslimmer requires python 2.6.x/2.7.x installed, your running version %s" % (sys.version_info))
     sys.exit()
 
 else:
 
-    #create full path to bundles modules
-    sitepackages_modules_full_path = os.path.join(videoslimmer_root_dir, u"modules/argparse")
+    #create full path to modules
+    sitepackages_modules_full_path = os.path.join(videoslimmer_root_dir_uni, u"modules/argparse")
     sitepackages_modules_full_path = os.path.normpath(sitepackages_modules_full_path)
 
-    #append full path to sys path
+    #append full path to sys
     sys.path.insert(1, sitepackages_modules_full_path)
 
+#import argparse in order to support python 2.6.x
 import argparse
+
+#########
+# tools #
+#########
+
+#debug for text type
+def string_type(text):
+
+    #prints out whether string, unicode or other
+    if isinstance(text, str):
+
+            print "byte string"
+
+    elif isinstance(text, unicode):
+
+            print "unicode string"
+
+    else:
+
+            print "not string"
+            
+#used to decode byte strings to unicode, either utf-8 (normally used on linux) or cp1252 (windows)
+def byte_to_uni(name):
+
+    #if type is byte string then decode to unicode, otherwise assume already unicode
+    if isinstance(name, str) and name != None:
+                
+        try:
+
+            #linux default encode
+            name = name.decode('utf8')
+                        
+        except UnicodeDecodeError:
+
+            #windows default encode 
+            name = name.decode('windows-1252')
+                        
+    return name
+
+#used to encode unicode to byte strings, either utf-8 (normally used on linux) or cp1252 (windows)
+def uni_to_byte(name):
+
+    #if type is unicode then encode to byte string, otherwise assume already byte string
+    if isinstance(name, unicode) and name != None:
+                
+        try:
+
+            #linux default encode
+            name = name.encode('utf8')
+                        
+        except UnicodeEncodeError:
+
+            #windows default encode 
+            name = name.encode('windows-1252')
+                        
+    return name
 
 #set regex for output from mkvmerge
 audio_regex = re.compile(ur"Track ID (\d+): audio.*")
@@ -62,42 +122,70 @@ commandline_parser.add_argument(u"--version", action=u"version", version=latest_
 args = vars(commandline_parser.parse_args())
 
 #save mkvmerge location
-if args["mkvmerge"] != None:
+if os.path.exists(args["mkvmerge"]):
 
-    mkvmerge_cli = args["mkvmerge"]
+    mkvmerge_cli_str = args["mkvmerge"]
+    mkvmerge_cli_uni = byte_to_uni(mkvmerge_cli_str)
 
-#save media location
-if args["media"] != None:
-
-    media_root = args["media"] 
-
-#save preferred language
-if args["lang"] != None:
-
-    preferred_lang = args["lang"]
-
-#save log path
-if args["logpath"] != None:
-
-    log_path = args["logpath"]
-    videoslimmer_log = os.path.join(log_path, "videoslimmer.log")
-        
 else:
 
-    log_path = videoslimmer_root_dir
-    videoslimmer_log = os.path.join(log_path, "videoslimmer.log")
+    sys.stderr.write(u"mkvmerge location does not exist")
+    sys.exit()
     
+#save media location
+if os.path.exists(args["media"]):
+
+    media_root_path_str = args["media"]
+    media_root_path_uni = byte_to_uni(media_root_path_str)
+
+else:
+
+    sys.stderr.write(u"media location does not exist")
+    sys.exit()
+    
+#save preferred language
+if len(args["lang"]) == 3:
+
+    preferred_lang_str = args["lang"]
+    preferred_lang_uni = byte_to_uni(preferred_lang_str)
+
+else:
+
+    sys.stderr.write(u"language code incorrect length, should be 3 characters")
+    sys.exit()
+    
+#save log path
+if args["logpath"] == None:
+        
+    videoslimmer_logs_file_uni = os.path.join(videoslimmer_logs_path_uni, u"videoslimmer.log")
+
+else:
+
+    logs_path_uni = byte_to_uni(args["logpath"])
+
+    if not os.path.exists(logs_path_uni):
+        
+        os.makedirs(logs_path_uni)
+
+    videoslimmer_logs_file_uni = os.path.join(logs_path_uni, u"videoslimmer.log")
+                            
 #save log level
-if args["loglevel"] != None:
+if args["loglevel"] == None:
+
+    log_level = u"info"
+
+elif args["loglevel"] == "info" or args["loglevel"] == "warning" or args["loglevel"] == "error":
 
     log_level = args["loglevel"]
+    log_level = byte_to_uni(log_level)
 
 else:
-
-    log_level = "info"
+    
+    sys.stderr.write(u"incorrect logging level specified, defaulting to log level 'info'")
+    log_level = u"info"
 
 #check version of mkvmerge is 6.5.0 or greater
-cmd = [mkvmerge_cli, "--vesion"]
+cmd = [mkvmerge_cli_str, "--vesion"]
 mkvmerge = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 stdout, stderr = mkvmerge.communicate()
 
@@ -106,47 +194,9 @@ mkmerge_version = re.compile(ur"(?<=v)[\d.]+", re.IGNORECASE).search(stdout)
 #if min version not met, then exit
 if StrictVersion(mkmerge_version.group()) < StrictVersion("6.5.0"):
     
-    print u"MKVMerge version is less than 6.5.0, please upgrade"
+    sys.stderr.write(u"mkvmerge version is less than 6.5.0, please upgrade")
     sys.exit()    
     
-#########
-# tools #
-#########
-
-#used to decode string to utf-8 or windows 1252 - used with os.walk
-def string_decode(name):
-
-    #if not string then unicode, does not need to be modified
-    if type(name) == str:
-                
-        try:
-
-            #used for linux files
-            name = name.decode('utf8')
-                        
-        except:
-
-            #used for windows files
-            name = name.decode('windows-1252')
-                        
-    return name
-
-#debug for text type
-def string_type(text):
-
-    #prints out whether string, unicode or other
-    if isinstance(text, str):
-
-            print "byte string"
-
-    elif isinstance(text, unicode):
-
-            print "unicode string"
-
-    else:
-
-            print "not string"
-
 ###########
 # logging #
 ###########
@@ -160,7 +210,7 @@ def videoslimmer_logging():
     videoslimmer_logger = logging.getLogger("videoslimmer")
 
     #add rotating log handler
-    videoslimmer_rotatingfilehandler = logging.handlers.RotatingFileHandler(videoslimmer_log, "a", maxBytes=10485760, backupCount=3, encoding = "utf-8")
+    videoslimmer_rotatingfilehandler = logging.handlers.RotatingFileHandler(videoslimmer_logs_file_uni, "a", maxBytes=10485760, backupCount=3, encoding = "utf-8")
     
     #set formatter for videoslimmer
     videoslimmer_rotatingfilehandler.setFormatter(videoslimmer_formatter)
@@ -199,46 +249,48 @@ def videoslimmer_logging():
 vs_log = videoslimmer_logging()
 
 def videoslimmer():
-    
-    for root, dirs, files in os.walk(media_root):
 
-        #decode root to unicode
-        root = string_decode(root)
+    #walk media root path, convert to byte string before walk
+    for root, dirs, files in os.walk(media_root_path_uni):
         
-        for f in files:
-
-            #decode filename to unicode
-            f = string_decode(f)        
+        for media_filename in files:
             
             #filter out non mkv files
-            if not f.endswith(".mkv"):
+            if not media_filename.endswith(".mkv"):
                 
                 continue
-        
-            #path to file, encode to byte string (required for subprocess and print)
-            path = os.path.join(root.encode("utf-8"), f.encode("utf-8"))
 
-            #create temp merge file, will be renamed to source if succesful merge
-            temp_file = "%s-vs.temp" % (path)
+            #create full path to media file
+            media_file_path_uni = os.path.join(root, media_filename)
+            media_file_path_str = uni_to_byte(media_file_path_uni)
+
+            #create full path to temporary file
+            temp_file_path_uni = u"%s.temp" % (media_file_path_uni)
+            temp_file_path_str = uni_to_byte(temp_file_path_uni)     
+
+            #create temporary file
+            temp_file_uni = u"%s.temp" % (media_filename)
+            temp_file_str = uni_to_byte(temp_file_uni)
 
             #delete any previously failed merge files        
-            if os.path.exists(temp_file):
+            if os.path.exists(temp_file_path_str):
                               
-                os.remove(temp_file)
-                vs_log.info(u"Deleted temporary file %s" % (string_decode(temp_file)))
+                os.remove(temp_file_path_str)
+                vs_log.info(u"deleted temporary file %s" % (temp_file_path_uni))
 
-            vs_log.info("processing file %s" % (string_decode(path)))                
+            vs_log.info(u"analysing file %s" % (media_filename))
+            vs_log.info(u"path to file is %s" % (root))
             
             #build command line
-            cmd = [mkvmerge_cli, "--identify-verbose", path]
+            cmd = [uni_to_byte(mkvmerge_cli_str), "--identify-verbose", media_file_path_str]
 
-            #get mkv info
+            #use mkvmerge to get info for file
             mkvmerge = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
             stdout, stderr = mkvmerge.communicate()
             
             if mkvmerge.returncode != 0:
                 
-                vs_log.warning(u"mkvmerge failed to identify file %s" % (string_decode(path)))
+                vs_log.warning(u"mkvmerge failed to identify file %s" % (media_file_path_uni))
                 continue
 
             #create empty lists for audio and subs
@@ -262,11 +314,12 @@ def videoslimmer():
                         
                         subtitle_track_list.append(subtitle_track_search.group())
 
+            #create empty lists for audio to remove and preferred audio
+            remove_audio_list = []
+            pref_audio_list = []
+
             #find audio to remove and keep
             if audio_track_list:
-
-                remove_audio_list = []
-                pref_audio_list = []
                 
                 #find audio tracks to remove, if not found then skip
                 for audio_track_item in audio_track_list:
@@ -277,56 +330,59 @@ def videoslimmer():
 
                         audio_lang = audio_lang_search.group()                    
                     
-                        if audio_lang != preferred_lang:
+                        if audio_lang != preferred_lang_str:
 
                             remove_audio_trackid_search = trackid_regex.search(audio_track_item)
 
                             if remove_audio_trackid_search != None:
 
                                 remove_audio_trackid = remove_audio_trackid_search.group()                    
-
-                                vs_log.info(u"audio track id to remove is %s" % (remove_audio_trackid))
                                 remove_audio_list.append(remove_audio_trackid)
 
                 if not remove_audio_list:
 
                     vs_log.info(u"no audio tracks to remove")
-                
-                #find audio tracks with preferred language, if not found then skip
-                for audio_track_item in audio_track_list:
 
-                    audio_lang_search = language_regex.search(audio_track_item)
+                else:
 
-                    if audio_lang_search != None:
-
-                        audio_lang = audio_lang_search.group()                    
+                    vs_log.info(u"audio track id(s) to remove are %s" % (byte_to_uni(", ".join(remove_audio_list))))
                     
-                        if audio_lang == preferred_lang:
+                    #find audio tracks with preferred language, if not found then skip
+                    for audio_track_item in audio_track_list:
 
-                            pref_audio_trackid_search = trackid_regex.search(audio_track_item)
+                        audio_lang_search = language_regex.search(audio_track_item)
 
-                            if pref_audio_trackid_search != None:
+                        if audio_lang_search != None:
 
-                                pref_audio_trackid = pref_audio_trackid_search.group()
-                                
-                                vs_log.info(u"audio track id with preferred language is %s" % (pref_audio_trackid))
-                                pref_audio_list.append(pref_audio_trackid)
+                            audio_lang = audio_lang_search.group()                    
+                        
+                            if audio_lang == preferred_lang_str:
 
-                if not pref_audio_list:
+                                pref_audio_trackid_search = trackid_regex.search(audio_track_item)
 
-                    vs_log.info(u"no audio tracks with preferred language")
+                                if pref_audio_trackid_search != None:
+
+                                    pref_audio_trackid = pref_audio_trackid_search.group()                                
+                                    pref_audio_list.append(pref_audio_trackid)
+
+                    if not pref_audio_list:
+
+                        vs_log.info(u"no audio tracks with preferred language")
+
+                    else:
+
+                        vs_log.info(u"audio track id(s) with preferred language are %s" % (byte_to_uni(", ".join(pref_audio_list))))
                     
             else:
 
                 vs_log.info(u"no audio tracks present")
-                remove_audio_list = []
-                pref_audio_list = []
+
+            #create empty lists for subtitles to remove and preferred subtitles
+            remove_subtitle_list = []
+            pref_subtitle_list = []
 
             # find subtitle to remove and keep
             if subtitle_track_list:
-
-                remove_subtitle_list = []
-                pref_subtitle_list = []
                 
                 #find subtitle tracks to remove, if not found then skip
                 for subtitle_track_item in subtitle_track_list:
@@ -337,98 +393,106 @@ def videoslimmer():
 
                         subtitle_lang = subtitle_lang_search.group()                    
                     
-                        if subtitle_lang != preferred_lang:
+                        if subtitle_lang != preferred_lang_str:
 
                             remove_subtitle_trackid_search = trackid_regex.search(subtitle_track_item)
 
                             if remove_subtitle_trackid_search != None:
 
                                 remove_subtitle_trackid = remove_subtitle_trackid_search.group()                    
-
-                                vs_log.info(u"subtitle track id to remove is %s" % (remove_subtitle_trackid))
                                 remove_subtitle_list.append(remove_subtitle_trackid)
 
                 if not remove_subtitle_list:
 
                     vs_log.info(u"no subtitle tracks to remove")
+
+                else:
+
+                    vs_log.info(u"subtitle track id(s) to remove are %s" % (byte_to_uni(", ".join(remove_subtitle_list))))
                 
-                #find subtitle tracks with preferred language, if not found then skip
-                for subtitle_track_item in subtitle_track_list:
+                    #find subtitle tracks with preferred language, if not found then skip
+                    for subtitle_track_item in subtitle_track_list:
 
-                    subtitle_lang_search = language_regex.search(subtitle_track_item)
+                        subtitle_lang_search = language_regex.search(subtitle_track_item)
 
-                    if subtitle_lang_search != None:
+                        if subtitle_lang_search != None:
 
-                        subtitle_lang = subtitle_lang_search.group()                    
-                    
-                        if subtitle_lang == preferred_lang:
+                            subtitle_lang = subtitle_lang_search.group()                    
+                        
+                            if subtitle_lang == preferred_lang_str:
 
-                            pref_subtitle_trackid_search = trackid_regex.search(subtitle_track_item)
+                                pref_subtitle_trackid_search = trackid_regex.search(subtitle_track_item)
 
-                            if pref_subtitle_trackid_search != None:
+                                if pref_subtitle_trackid_search != None:
 
-                                pref_subtitle_trackid = pref_subtitle_trackid_search.group()                    
+                                    pref_subtitle_trackid = pref_subtitle_trackid_search.group()                    
+                                    pref_subtitle_list.append(pref_subtitle_trackid)
 
-                                vs_log.info(u"subtitle track id with preferred language is %s" % (pref_subtitle_trackid))
-                                pref_subtitle_list.append(pref_subtitle_trackid)
+                    if not pref_subtitle_list:
 
-                if not pref_subtitle_list:
+                        vs_log.info(u"no subtitle tracks with preferred language")      
 
-                    vs_log.info(u"no subtitle tracks with preferred language")      
+                    else:
+
+                        vs_log.info(u"subtitle track id(s) with preferred language are %s" % (byte_to_uni(", ".join(pref_subtitle_list))))
                     
             else:
 
                 vs_log.info(u"no subtitle tracks present")
-                remove_subtitle_list = []
-                pref_subtitle_list = []
-
+                
             #if no audio or subtitles to remove then skip to next iteration
             if not ((pref_audio_list and remove_audio_list) or (pref_subtitle_list and remove_subtitle_list)):
 
+                vs_log.info(u"processing finished")
                 continue
                              
             #build command line
-            cmd = [mkvmerge_cli, "-o", temp_file]
+            cmd = [uni_to_byte(mkvmerge_cli_str), "-o", temp_file_path_str]
 
             #check preferred audio exists, and there are audio tracks to remove
             if pref_audio_list and remove_audio_list:
                     
                 cmd+= ["--audio-tracks", "%s" % (",".join(pref_audio_list))]
-                cmd+= ["--default-track", "%s" % (",".join(pref_audio_list))]
+                cmd+= ["--default-track", "%s" % (pref_audio_list[0])]
 
             #check preferred subtitle exists, and there are subtitles to remove
             if pref_subtitle_list and remove_subtitle_list:
 
                 cmd+= ["--subtitle-tracks", "%s" % (",".join(pref_subtitle_list))]
-                cmd+= ["--default-track", "%s" % (",".join(pref_subtitle_list))]
+                cmd+= ["--default-track", "%s" % (pref_subtitle_list[0])]
 
-            cmd += [path]
-
-            vs_log.info(u"send command %s to mkvmerge" % (cmd))
+            cmd += [media_file_path_str]
+            vs_log.info(u"send command %s to mkvmerge" % (byte_to_uni(", ".join(cmd))))
                         
             #process file
-            vs_log.info(u"Processing file...")
+            vs_log.info(u"processing file...")
             mkvmerge = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
             stdout, stderr = mkvmerge.communicate()
 
             if mkvmerge.returncode != 0:
 
-                vs_log.warning(u"FAILED, output from mkvmerge is %s" % (stdout))
+                vs_log.warning(u"FAILED, output from mkvmerge is %s" % (byte_to_uni(stdout)))
 
-                if os.path.exists(temp_file):
+                if os.path.exists(temp_file_path_str):
                                   
                     #if failed then delete temp file                
-                    os.remove(temp_file)
-                    vs_log.info(u"Deleted temporary file %s" % (string_decode(temp_file)))
-                                  
+                    os.remove(temp_file_path_str)
+                    vs_log.info(u"deleted temporary file %s" % (temp_file_uni))
+
+                vs_log.info(u"processing finished")
                 continue
 
             vs_log.info(u"SUCCESS")
 
-            # remove source file and rename temp 
-            os.remove(path)
-            os.rename(temp_file, path)
+            #remove source file and rename temp 
+            os.remove(media_file_path_str)
+            vs_log.info(u"removed source file %s" % (byte_to_uni(media_file_path_str)))
+            
+            os.rename(temp_file_path_str, media_file_path_str)
+            vs_log.info(u"renamed temporary file %s" % (temp_file_uni))
 
+            vs_log.info(u"processing finished")
+            
 if __name__ == '__main__':
 
     #run main function
