@@ -11,10 +11,10 @@ import subprocess
 from distutils.version import StrictVersion
 
 #define path to videoslimmer root
-videoslimmer_root_dir_uni = os.path.dirname(os.path.realpath(__file__)).decode("utf-8")
+videoslimmer_root_path_uni = os.path.dirname(os.path.realpath(__file__)).decode("utf-8")
 
 #define path to videoslimmer logs folder
-videoslimmer_logs_dir_uni = os.path.join(videoslimmer_root_dir_uni, u"logs")
+videoslimmer_logs_path_uni = os.path.join(videoslimmer_root_path_uni, u"logs")
 
 #check version of python is 2.6.x or 2.7.x
 if sys.version_info<(2,6,0) or sys.version_info>=(3,0,0):
@@ -25,7 +25,7 @@ if sys.version_info<(2,6,0) or sys.version_info>=(3,0,0):
 else:
 
     #create full path to modules
-    sitepackages_modules_full_path = os.path.join(videoslimmer_root_dir_uni, u"modules/argparse")
+    sitepackages_modules_full_path = os.path.join(videoslimmer_root_path_uni, u"modules/argparse")
     sitepackages_modules_full_path = os.path.normpath(sitepackages_modules_full_path)
 
     #append full path to sys
@@ -131,7 +131,7 @@ else:
 
     sys.stderr.write(u"mkvmerge location does not exist")
     sys.exit()
-    
+
 #save media location
 if os.path.exists(args["media"]):
 
@@ -254,6 +254,8 @@ def videoslimmer():
     for root, dirs, files in os.walk(media_root_path_uni):
         
         for media_filename in files:
+
+            vs_log.info(u"processing started")
             
             #filter out non mkv files
             if not media_filename.endswith(".mkv"):
