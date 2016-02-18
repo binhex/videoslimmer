@@ -30,7 +30,7 @@ Examples
 python2 VideoSlimmer.py --mkvmerge /opt/mkvtoolnix/mkvmerge --media /media/movies --lang eng
 ```
 
-<u>Windows	platform</u>	
+<u>Windows    platform</u>    
 ```
 VideoSlimmer.py --mkvmerge "c:\Program Files\mkvtoolnix\mkvmerge.exe" --media D:\media\movies --lang eng
 ```
@@ -44,3 +44,7 @@ Notes
 
 - VideoSlimmer will NOT remove audio or subtitles unless there is a match for the specified language.
 - VideoSlimmer IS recursive, thus all files/folders will be processed from the root defined media folder.
+
+If you appreciate my work, then please consider buying me a beer  :D
+
+[![PayPal donation](https://www.paypal.com/en_US/i/btn/btn_donate_SM.gif)](https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=H8PWP3RLBDCBQ)
