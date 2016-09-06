@@ -17,7 +17,7 @@ Syntax
 ------
 
 ```
-VideoSlimmer.py --mkvmerge <path> --media <path> --lang <code> [--log <level>] [--version]
+VideoSlimmer.py --mkvmerge <path> --media <path> --lang <code> [--edit-title yes] [--delete-title yes] [--log <level>] [--version]
 ```
 
 Language codes can be found [here](http://en.wikipedia.org/wiki/List_of_ISO_639-2_codes)
@@ -32,11 +32,11 @@ python2 VideoSlimmer.py --mkvmerge /opt/mkvtoolnix/mkvmerge --media /media/movie
 
 <u>Windows    platform</u>    
 ```
-VideoSlimmer.py --mkvmerge "c:\Program Files\mkvtoolnix\mkvmerge.exe" --media D:\media\movies --lang eng
+VideoSlimmer.py --mkvmerge "c:\Program Files\mkvtoolnix\mkvmerge.exe" --media D:\media\movies --lang eng --edit-title yes
 ```
 or specifying UNC path
 ```
-VideoSlimmer.py --mkvmerge "c:\Program Files\mkvtoolnix\mkvmerge.exe" --media \\medaserver\media\movies --lang eng
+VideoSlimmer.py --mkvmerge "c:\Program Files\mkvtoolnix\mkvmerge.exe" --media \\medaserver\media\movies --lang eng --delete-title yes
 ```
 
 Notes
