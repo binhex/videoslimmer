@@ -44,6 +44,7 @@ Notes
 
 - VideoSlimmer will NOT remove audio or subtitles unless there is a match for the specified language.
 - VideoSlimmer IS recursive, thus all files/folders will be processed from the root defined media folder.
+
 ___
 If you appreciate my work, then please consider buying me a beer  :D
 

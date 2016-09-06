@@ -133,7 +133,7 @@ commandline_parser = ArgparseCustom(prog="VideoSlimmer", description="%(prog)s "
 commandline_parser.add_argument(u"--mkvmerge",  metavar=u"<path>", required=True, help=u"specify the path to mkvmerge e.g. --mkvmerge c:\Program Files\mkvtoolnix\mkvmerge.exe")
 commandline_parser.add_argument(u"--media",  metavar=u"<path>", required=True, help=u"specify the path to your media e.g. --media c:\media\movies")
 commandline_parser.add_argument(u"--lang", metavar=u"<code>", required=True, help=u"specify the language you want to keep e.g. --lang eng")
-commandline_parser.add_argument(u"--edit-title", metavar=u"yes", help=u"specify whether you want to edit the title metadata to the name of the filename e.g. --edit-title yes")
+commandline_parser.add_argument(u"--edit-title", metavar=u"yes", help=u"specify whether you want to change the title metadata to match the filename e.g. --edit-title yes")
 commandline_parser.add_argument(u"--delete-title", metavar=u"yes", help=u"specify whether you want to delete the title metadata  e.g. --delete-title yes")
 commandline_parser.add_argument(u"--logpath", metavar=u"<path>", help=u"specify the path to your log files e.g. --logpath c:\videoslimmer")
 commandline_parser.add_argument(u"--loglevel", metavar=u"<level>", help=u"specify the logging level, debug, info, warning, error, debug being the most verbose e.g. --loglevel info")
