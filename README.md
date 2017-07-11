@@ -17,7 +17,7 @@ Syntax
 ------
 
 ```
-VideoSlimmer.py --mkvmerge <path> --media <path> --lang <code> [--edit-title yes] [--delete-title yes] [--log <level>] [--version]
+VideoSlimmer.py --mkvmerge <path> --media <path> --lang <code> [--edit-title yes] [--delete-title yes] [--dry-run no] [--log <level>] [--version]
 ```
 
 Language codes can be found [here](http://en.wikipedia.org/wiki/List_of_ISO_639-2_codes)
@@ -27,22 +27,22 @@ Examples
 
 <u>Linux platform</u>
 ```
-python2 VideoSlimmer.py --mkvmerge /opt/mkvtoolnix/mkvmerge --media /media/movies --lang eng
+python2 VideoSlimmer.py --mkvmerge /opt/mkvtoolnix/mkvmerge --media /media/movies --lang eng --dry-run no
 ```
 
 <u>Windows    platform</u>    
 ```
-VideoSlimmer.py --mkvmerge "c:\Program Files\mkvtoolnix\mkvmerge.exe" --media D:\media\movies --lang eng --edit-title yes
+VideoSlimmer.py --mkvmerge "c:\Program Files\mkvtoolnix\mkvmerge.exe" --media D:\media\movies --lang eng --dry-run no --edit-title yes
 ```
 or specifying UNC path
 ```
-VideoSlimmer.py --mkvmerge "c:\Program Files\mkvtoolnix\mkvmerge.exe" --media \\medaserver\media\movies --lang eng --delete-title yes
+VideoSlimmer.py --mkvmerge "c:\Program Files\mkvtoolnix\mkvmerge.exe" --media \\medaserver\media\movies --lang eng --dry-run no --delete-title yes
 ```
 
 Notes
 -----
 
-- VideoSlimmer will NOT remove audio or subtitles unless there is a match for the specified language.
+- VideoSlimmer will NOT remove audio or subtitles unless there is a match for the specified preferred language.
 - VideoSlimmer IS recursive, thus all files/folders will be processed from the root defined media folder.
 
 ___

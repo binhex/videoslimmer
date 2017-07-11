@@ -127,7 +127,7 @@ class ArgparseCustom(argparse.ArgumentParser):
         sys.exit(2)
 
 # setup argparse description and usage, also increase spacing for help to 50
-commandline_parser = ArgparseCustom(prog="VideoSlimmer", description="%(prog)s " + latest_vs_version, usage="%(prog)s [--help] --mkvmerge <path> --media <path> --lang <code> [--edit-title yes] [--delete-title yes] [--log <level>] [--version]", formatter_class=lambda prog: argparse.HelpFormatter(prog, max_help_position=70))
+commandline_parser = ArgparseCustom(prog="VideoSlimmer", description="%(prog)s " + latest_vs_version, usage="%(prog)s [--help] --mkvmerge <path> --media <path> --lang <code> [--edit-title yes] [--delete-title yes] [--dry-run yes] [--log <level>] [--version]", formatter_class=lambda prog: argparse.HelpFormatter(prog, max_help_position=70))
 
 # add argparse command line flags
 commandline_parser.add_argument(u"--mkvmerge",  metavar=u"<path>", required=True, help=u"specify the path to mkvmerge e.g. --mkvmerge c:\Program Files\mkvtoolnix\mkvmerge.exe")
@@ -135,6 +135,7 @@ commandline_parser.add_argument(u"--media",  metavar=u"<path>", required=True, h
 commandline_parser.add_argument(u"--lang", metavar=u"<code>", required=True, help=u"specify the language you want to keep e.g. --lang eng")
 commandline_parser.add_argument(u"--edit-title", metavar=u"yes", help=u"specify whether you want to change the title metadata to match the filename e.g. --edit-title yes")
 commandline_parser.add_argument(u"--delete-title", metavar=u"yes", help=u"specify whether you want to delete the title metadata  e.g. --delete-title yes")
+commandline_parser.add_argument(u"--dry-run", metavar=u"no", help=u"specify whether you want to perform a dry run e.g. --dry-run yes")
 commandline_parser.add_argument(u"--logpath", metavar=u"<path>", help=u"specify the path to your log files e.g. --logpath c:\videoslimmer")
 commandline_parser.add_argument(u"--loglevel", metavar=u"<level>", help=u"specify the logging level, debug, info, warning, error, debug being the most verbose e.g. --loglevel info")
 commandline_parser.add_argument(u"--version", action=u"version", version=latest_vs_version)
@@ -195,6 +196,15 @@ if args["delete_title"] == "yes":
 else:
 
     delete_title = False
+
+# if enabled then perform dry run
+if args["dry_run"] == "yes":
+
+    dry_run = True
+
+else:
+
+    dry_run = False
 
 # save log path
 if args["logpath"] is None:
@@ -527,6 +537,10 @@ def videoslimmer():
 
             vs_log.debug(u"filename without extension is \"%s\"" % media_file_bare)
 
+            if dry_run is True:
+
+                vs_log.info(u"[DRY RUN] No files will be modified")
+
             # create full path to media file
             media_file_path_uni = os.path.join(root, media_filename)
             media_file_path_str = uni_to_byte(media_file_path_uni)
@@ -596,7 +610,7 @@ def videoslimmer():
                 elif delete_title is True:
 
                     mkvmerge_cmd += [u"--title", u""]
-                
+
             # check preferred audio exists, and there are audio tracks to remove
             if pref_audio_list and remove_audio_list:
 
@@ -616,31 +630,37 @@ def videoslimmer():
             file_system_encoding = sys.getfilesystemencoding()
             mkvmerge_cmd = [x.encode(file_system_encoding) for x in mkvmerge_cmd]
 
-            # process file
-            mkvmerge_info = subprocess.Popen(mkvmerge_cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-            mkvmerge_info_stdout, mkvmerge_info_stderr = mkvmerge_info.communicate()
+            if dry_run is True:
 
-            if mkvmerge_info.returncode != 0:
+                vs_log.info(u"[DRY RUN] mkvmerge command is %s" % mkvmerge_cmd)
 
-                vs_log.warning(u"[FAILED] output from mkvmerge is %s" % (byte_to_uni(mkvmerge_info_stdout)))
+            else:
 
-                if os.path.exists(temp_file_path_str):
+                # process file
+                mkvmerge_info = subprocess.Popen(mkvmerge_cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+                mkvmerge_info_stdout, mkvmerge_info_stderr = mkvmerge_info.communicate()
 
-                    # if failed then delete temp file
-                    os.remove(temp_file_path_str)
-                    vs_log.debug(u"deleted temporary file %s" % temp_file_uni)
+                if mkvmerge_info.returncode != 0:
 
-                vs_log.warning(u"[FAILED] mkvmerge returned non zero return code")
-                continue
+                    vs_log.warning(u"[FAILED] output from mkvmerge is %s" % (byte_to_uni(mkvmerge_info_stdout)))
 
-            vs_log.debug(u"mkvmerge returned success")
+                    if os.path.exists(temp_file_path_str):
 
-            # remove source file and rename temp
-            os.remove(media_file_path_str)
-            vs_log.debug(u"removed source file \"%s\"" % media_file_path_uni)
+                        # if failed then delete temp file
+                        os.remove(temp_file_path_str)
+                        vs_log.debug(u"deleted temporary file %s" % temp_file_uni)
 
-            os.rename(temp_file_path_str, media_file_path_str)
-            vs_log.debug(u"renamed temporary file from \"%s\" to \"%s\"" % (temp_file_uni, media_filename))
+                    vs_log.warning(u"[FAILED] mkvmerge returned non zero return code")
+                    continue
+
+                vs_log.debug(u"mkvmerge returned success")
+
+                # remove source file and rename temp
+                os.remove(media_file_path_str)
+                vs_log.debug(u"removed source file \"%s\"" % media_file_path_uni)
+
+                os.rename(temp_file_path_str, media_file_path_str)
+                vs_log.debug(u"renamed temporary file from \"%s\" to \"%s\"" % (temp_file_uni, media_filename))
 
             vs_log.info(u"[SUCCESS] Processing finished")
 
