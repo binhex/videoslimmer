@@ -17,7 +17,7 @@ Syntax
 ------
 
 ```
-VideoSlimmer.py --mkvmerge <path> --media <path> --lang <code> [--edit-title yes] [--delete-title yes] [--dry-run no] [--log <level>] [--version]
+VideoSlimmer.py --mkvmerge <path> --media <path> --lang <code> [--edit-title yes] [--delete-title yes] [--dry-run no] [--log <level>] [--keep-all-subtitles] [--version]
 ```
 
 Language codes can be found [here](http://en.wikipedia.org/wiki/List_of_ISO_639-2_codes)
