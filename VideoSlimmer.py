@@ -127,7 +127,7 @@ class ArgparseCustom(argparse.ArgumentParser):
         sys.exit(2)
 
 # setup argparse description and usage, also increase spacing for help to 50
-commandline_parser = ArgparseCustom(prog="VideoSlimmer", description="%(prog)s " + latest_vs_version, usage="%(prog)s [--help] --mkvmerge <path> --media <path> --lang <code> [--edit-title yes] [--delete-title yes] [--dry-run yes] [--log <level>] [--version]", formatter_class=lambda prog: argparse.HelpFormatter(prog, max_help_position=70))
+commandline_parser = ArgparseCustom(prog="VideoSlimmer", description="%(prog)s " + latest_vs_version, usage="%(prog)s [--help] --mkvmerge <path> --media <path> --lang <code> [--edit-title yes] [--delete-title yes] [--dry-run yes] [--log <level>] [--keep-all-subtitles] [--version]", formatter_class=lambda prog: argparse.HelpFormatter(prog, max_help_position=70))
 
 # add argparse command line flags
 commandline_parser.add_argument(u"--mkvmerge",  metavar=u"<path>", required=True, help=u"specify the path to mkvmerge e.g. --mkvmerge c:\Program Files\mkvtoolnix\mkvmerge.exe")
@@ -138,6 +138,7 @@ commandline_parser.add_argument(u"--delete-title", metavar=u"yes", help=u"specif
 commandline_parser.add_argument(u"--dry-run", metavar=u"no", help=u"specify whether you want to perform a dry run e.g. --dry-run yes")
 commandline_parser.add_argument(u"--logpath", metavar=u"<path>", help=u"specify the path to your log files e.g. --logpath c:\videoslimmer")
 commandline_parser.add_argument(u"--loglevel", metavar=u"<level>", help=u"specify the logging level, debug, info, warning, error, debug being the most verbose e.g. --loglevel info")
+commandline_parser.add_argument(u"--keep-all-subtitles", action=u"store_true", help=u"Keep all subtitles regardless of language")
 commandline_parser.add_argument(u"--version", action=u"version", version=latest_vs_version)
 
 # save arguments in dictionary
@@ -390,6 +391,10 @@ def audio_tracks(mkvmerge_info_stdout_uni):
 
 
 def subtitle_tracks(mkvmerge_info_stdout_uni):
+
+    if args['keep_all_subtitles']:
+        vs_log.info(u"--keep-all-subtitles flags is set. Any existing subtitles will be kept")
+        return [], []
 
     # create empty lists for subtitles to remove and preferred subtitles
     remove_subtitle_list = []
