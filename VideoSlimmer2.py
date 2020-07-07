@@ -140,8 +140,7 @@ def videoslimmer():
 
             process_dict = {}
 
-            mkvmerge_cmd = r'%s --identification-format json --identify "%s"' % (
-            mkvmerge_file_path, input_filename_path)
+            mkvmerge_cmd = r'%s --identification-format json --identify "%s"' % (mkvmerge_file_path, input_filename_path)
             vs_log.debug(u"Command to identify media is '%s'" % mkvmerge_cmd)
             mkvmerge_info = subprocess.Popen(mkvmerge_cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
             mkvmerge_info_stdout, mkvmerge_info_stderr = mkvmerge_info.communicate()
@@ -187,14 +186,12 @@ def videoslimmer():
                         subtitles_tracks_id_remove = ""
 
                 temp_output_filename_path = r'%s.tmp' % input_filename_path
-                mkvmerge_cmd = r'%s --output "%s" %s %s "%s"' % (
-                mkvmerge_file_path, temp_output_filename_path, audio_tracks_id_remove, subtitles_tracks_id_remove,
-                input_filename_path)
+                mkvmerge_cmd = r'%s --output "%s" %s %s "%s"' % (mkvmerge_file_path, temp_output_filename_path, audio_tracks_id_remove, subtitles_tracks_id_remove, input_filename_path)
                 vs_log.debug(u"mkvmerge command to execute is '%s'" % mkvmerge_cmd)
 
                 if dry_run:
 
-                    vs_log.info(u"dryrun enabled, command that would of been executed is '%s'" % mkvmerge_cmd)
+                    vs_log.info(u"dry run enabled, command that would of been executed is '%s'" % mkvmerge_cmd)
                     continue
 
                 else:
@@ -212,8 +209,7 @@ def videoslimmer():
 
                         output_filename_path = r'%s.new' % input_filename_path
                         os.rename(temp_output_filename_path, output_filename_path)
-                        vs_log.debug(u"renamed temporary file from '%s' to '%s'" % (
-                        temp_output_filename_path, output_filename_path))
+                        vs_log.debug(u"renamed temporary file from '%s' to '%s'" % (temp_output_filename_path, output_filename_path))
 
                     else:
 
@@ -222,8 +218,7 @@ def videoslimmer():
                         vs_log.debug(u"removed source file '%s'" % input_filename_path)
 
                         os.rename(temp_output_filename_path, output_filename_path)
-                        vs_log.debug(u"renamed temporary file from '%s' to '%s'" % (
-                        temp_output_filename_path, output_filename_path))
+                        vs_log.debug(u"renamed temporary file from '%s' to '%s'" % (temp_output_filename_path, output_filename_path))
 
             else:
 
@@ -247,7 +242,6 @@ if __name__ == '__main__':
         sys.stderr.write(u"videoslimmer requires Python 3.x installed, your running version is %s"), sys.version_info
         sys.exit()
 
-
     # custom argparse to redirect user to help if unknown argument specified
     class ArgparseCustom(argparse.ArgumentParser):
 
@@ -268,14 +262,14 @@ if __name__ == '__main__':
     mutual_exclusion_group = commandline_parser.add_mutually_exclusive_group(required=True)
 
     # add argparse command line flags
-    mutual_exclusion_group.add_argument(u"--keep-lang", metavar=u"<code>",
-                                        help=u"specify the language(s) you want to keep, all other languages will be removed. If you want to keep multiple languages then use comma's as a separator e.g. --keep-lang eng,ger.")
-    mutual_exclusion_group.add_argument(u"--remove-lang", metavar=u"<code>",
-                                        help=u"specify the language(s) you want to remove, all other languages will be kept. If you want to keep multiple languages then use comma's as a separator e.g. --remove-lang fra,eng.")
-    commandline_parser.add_argument(u"--media", metavar=u"<path>", required=True,
-                                    help=u"specify the path to your media e.g. --media 'c:\media\movies'.")
     commandline_parser.add_argument(u"--mkvmerge", metavar=u"<path>",
                                     help=u"specify the location of mkvmerge, if not specified then the path will be used e.g. --mkvmerge 'c:\Program Files\mkvtoolnix\mkvmerge.exe'.")
+    commandline_parser.add_argument(u"--media", metavar=u"<path>", required=True,
+                                    help=u"specify the path to your media e.g. --media 'c:\media\movies'.")
+    mutual_exclusion_group.add_argument(u"--keep-lang", metavar=u"<code>",
+                                    help=u"specify the language(s) you want to keep, all other languages will be removed. If you want to keep multiple languages then use comma's as a separator e.g. --keep-lang eng,ger.")
+    mutual_exclusion_group.add_argument(u"--remove-lang", metavar=u"<code>",
+                                    help=u"specify the language(s) you want to remove, all other languages will be kept. If you want to keep multiple languages then use comma's as a separator e.g. --remove-lang fra,eng.")
     commandline_parser.add_argument(u"--edit-title", metavar=u"yes",
                                     help=u"specify whether you want to change the title metadata to match the filename, no value required.")
     commandline_parser.add_argument(u"--delete-title", metavar=u"yes",
@@ -436,8 +430,7 @@ if __name__ == '__main__':
 
         log_level = u"info"
 
-    elif args["loglevel"] == "debug" or args["loglevel"] == "info" or args["loglevel"] == "warning" or args[
-        "loglevel"] == "error":
+    elif args["loglevel"] == "debug" or args["loglevel"] == "info" or args["loglevel"] == "warning" or args["loglevel"] == "error":
 
         log_level = args["loglevel"]
 
