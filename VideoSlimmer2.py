@@ -9,13 +9,14 @@ from distutils.version import StrictVersion
 import argparse
 import json
 
-# TODO change --lang to --keep-lang
 # TODO add in --remove-lang this will remove ONLY these specific languages all others would be kept, cannot be used with --keep-lang so need to check both arent set
 # TODO add in --pref-audio-format specify quality of the audio you would ideally like, this is in conjunction with keep-lang|remove-lanf - if the audio quality found then remove all others, otherwise remove next best
+# TODO edit title is not done
+# TODO delete title not done
+# TODO keep audio format not done
 
 
 def videoslimmer_logging():
-
     # setup formatting for log messages
     videoslimmer_formatter = logging.Formatter(u"%(asctime)s %(module)s %(funcName)s :: [%(levelname)s] %(message)s")
 
@@ -23,7 +24,9 @@ def videoslimmer_logging():
     videoslimmer_logger = logging.getLogger(u"videoslimmer")
 
     # add rotating log handler
-    videoslimmer_rotatingfilehandler = logging.handlers.RotatingFileHandler(videoslimmer_logs_file_uni, "a", maxBytes=10485760, backupCount=3, encoding="utf-8")
+    videoslimmer_rotatingfilehandler = logging.handlers.RotatingFileHandler(videoslimmer_logs_file_uni, "a",
+                                                                            maxBytes=10485760, backupCount=3,
+                                                                            encoding="utf-8")
 
     # set formatter for videoslimmer
     videoslimmer_rotatingfilehandler.setFormatter(videoslimmer_formatter)
@@ -70,24 +73,21 @@ def videoslimmer_logging():
 
 
 def mkvmerge_version_check():
-
     mkvmerge_min_version = "31.0.0"
 
     mkvmerge_cmd = r"%s --version" % mkvmerge_file_path
     mkvmerge_info = subprocess.Popen(mkvmerge_cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     mkvmerge_info_stdout, mkvmerge_info_stderr = mkvmerge_info.communicate()
 
-    mkmerge_version = re.compile("(?<=v)[\d.]+", re.IGNORECASE).search(str(mkvmerge_info_stdout))
+    mkmerge_version = re.compile(r'(?<=v)[\d.]+', re.IGNORECASE).search(str(mkvmerge_info_stdout))
 
     # if min version not met, then exit
     if StrictVersion(mkmerge_version.group()) < StrictVersion(mkvmerge_min_version):
-
-        sys.stderr.write(u"mkvmerge version is less than %s, please upgrade", mkvmerge_min_version)
-        sys.exit()
+        sys.stderr.write(u"mkvmerge version is less than %s, please upgrade" % mkvmerge_min_version)
+        sys.exit(1)
 
 
 def identify_tracks(mkvmerge_json, track_type, process_dict):
-
     process_dict.update({'%s_keep_lang_present' % track_type: 'no'})
 
     tracks_id_remove_dict_value_list = []
@@ -124,7 +124,6 @@ def identify_tracks(mkvmerge_json, track_type, process_dict):
 
 
 def videoslimmer():
-
     # walk media root path, convert to byte string before walk
     for root, dirs, files in os.walk(media_root_path_str):
 
@@ -132,7 +131,6 @@ def videoslimmer():
 
             # filter out non mkv files
             if not input_filename.endswith(u".mkv"):
-
                 vs_log.warning(u"File \"%s\" does not have an mkv extension, skipping file" % input_filename)
                 continue
 
@@ -142,7 +140,8 @@ def videoslimmer():
 
             process_dict = {}
 
-            mkvmerge_cmd = r'%s --identification-format json --identify "%s"' % (mkvmerge_file_path, input_filename_path)
+            mkvmerge_cmd = r'%s --identification-format json --identify "%s"' % (
+            mkvmerge_file_path, input_filename_path)
             vs_log.debug(u"Command to identify media is '%s'" % mkvmerge_cmd)
             mkvmerge_info = subprocess.Popen(mkvmerge_cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
             mkvmerge_info_stdout, mkvmerge_info_stderr = mkvmerge_info.communicate()
@@ -152,7 +151,8 @@ def videoslimmer():
             process_dict = identify_tracks(mkvmerge_json_parsed, "subtitles", process_dict)
             vs_log.debug(u"Dictionary to process is '%s'" % process_dict)
 
-            if ("audio_tracks_id_remove" in process_dict and "audio_tracks_id_keep" in process_dict) or ("subtitles_tracks_id_remove" in process_dict and "subtitles_tracks_id_keep" in process_dict):
+            if ("audio_tracks_id_remove" in process_dict and "audio_tracks_id_keep" in process_dict) or (
+                    "subtitles_tracks_id_remove" in process_dict and "subtitles_tracks_id_keep" in process_dict):
 
                 if keep_all_audio:
 
@@ -187,7 +187,9 @@ def videoslimmer():
                         subtitles_tracks_id_remove = ""
 
                 temp_output_filename_path = r'%s.tmp' % input_filename_path
-                mkvmerge_cmd = r'%s --output "%s" %s %s "%s"' % (mkvmerge_file_path, temp_output_filename_path, audio_tracks_id_remove, subtitles_tracks_id_remove, input_filename_path)
+                mkvmerge_cmd = r'%s --output "%s" %s %s "%s"' % (
+                mkvmerge_file_path, temp_output_filename_path, audio_tracks_id_remove, subtitles_tracks_id_remove,
+                input_filename_path)
                 vs_log.debug(u"mkvmerge command to execute is '%s'" % mkvmerge_cmd)
 
                 if dry_run:
@@ -210,7 +212,8 @@ def videoslimmer():
 
                         output_filename_path = r'%s.new' % input_filename_path
                         os.rename(temp_output_filename_path, output_filename_path)
-                        vs_log.debug(u"renamed temporary file from '%s' to '%s'" % (temp_output_filename_path, output_filename_path))
+                        vs_log.debug(u"renamed temporary file from '%s' to '%s'" % (
+                        temp_output_filename_path, output_filename_path))
 
                     else:
 
@@ -219,7 +222,8 @@ def videoslimmer():
                         vs_log.debug(u"removed source file '%s'" % input_filename_path)
 
                         os.rename(temp_output_filename_path, output_filename_path)
-                        vs_log.debug(u"renamed temporary file from '%s' to '%s'" % (temp_output_filename_path, output_filename_path))
+                        vs_log.debug(u"renamed temporary file from '%s' to '%s'" % (
+                        temp_output_filename_path, output_filename_path))
 
             else:
 
@@ -243,6 +247,7 @@ if __name__ == '__main__':
         sys.stderr.write(u"videoslimmer requires Python 3.x installed, your running version is %s"), sys.version_info
         sys.exit()
 
+
     # custom argparse to redirect user to help if unknown argument specified
     class ArgparseCustom(argparse.ArgumentParser):
 
@@ -253,9 +258,10 @@ if __name__ == '__main__':
             self.print_help()
             sys.exit(2)
 
+
     # setup argparse description and usage, also increase spacing for help to 50
     commandline_parser = ArgparseCustom(prog="VideoSlimmer", description="%(prog)s " + videoslimmer_version,
-                                        usage="%(prog)s [--help] --mkvmerge <path> --media <path> --lang <code> [--edit-title yes] [--delete-title yes] [--dry-run yes] [--log <level>] [--keep-all-subtitles] [--version]",
+                                        usage="%(prog)s [--help] --mkvmerge <path> --media <path> --keep-lang <code>|--remove-lang <code> [--edit-title] [--delete-title] [--keep-all-subtitles] [--keep-all-audio] [--keep-audio-format] [--keep-orig-file] [--dry-run yes] [--log <level>] [--logpath <path>] [--version]",
                                         formatter_class=lambda prog: argparse.HelpFormatter(prog, max_help_position=30))
 
     # create mutual exclusion group to force either --kep-lang or --remove-lang to be set, not both
@@ -263,9 +269,9 @@ if __name__ == '__main__':
 
     # add argparse command line flags
     mutual_exclusion_group.add_argument(u"--keep-lang", metavar=u"<code>",
-                                    help=u"specify the language(s) you want to keep, all other languages will be removed. If you want to keep multiple languages then use comma's as a separator e.g. --keep-lang eng,ger.")
+                                        help=u"specify the language(s) you want to keep, all other languages will be removed. If you want to keep multiple languages then use comma's as a separator e.g. --keep-lang eng,ger.")
     mutual_exclusion_group.add_argument(u"--remove-lang", metavar=u"<code>",
-                                    help=u"specify the language(s) you want to remove, all other languages will be kept. If you want to keep multiple languages then use comma's as a separator e.g. --remove-lang fra,eng.")
+                                        help=u"specify the language(s) you want to remove, all other languages will be kept. If you want to keep multiple languages then use comma's as a separator e.g. --remove-lang fra,eng.")
     commandline_parser.add_argument(u"--media", metavar=u"<path>", required=True,
                                     help=u"specify the path to your media e.g. --media 'c:\media\movies'.")
     commandline_parser.add_argument(u"--mkvmerge", metavar=u"<path>",
@@ -274,12 +280,12 @@ if __name__ == '__main__':
                                     help=u"specify whether you want to change the title metadata to match the filename, no value required.")
     commandline_parser.add_argument(u"--delete-title", metavar=u"yes",
                                     help=u"specify whether you want to delete the title metadata, no value required.")
-    commandline_parser.add_argument(u"--keep-audio-format", metavar=u"yes",
-                                    help=u"audio format that we want to keep, all other audio formats will be removed if a match is found. If you want to keep multiple audio formats then use comma's as a separator e.g. --preferred-audio-foprmat atmos,dts-hd.")
     commandline_parser.add_argument(u"--keep-all-subtitles", action=u"store_true",
                                     help=u"Keep all subtitles regardless of language, no value required.")
     commandline_parser.add_argument(u"--keep-all-audio", action=u"store_true",
                                     help=u"Keep all audio regardless of language, no value required.")
+    commandline_parser.add_argument(u"--keep-audio-format", metavar=u"yes",
+                                    help=u"audio format that we want to keep, all other audio formats will be removed if a match is found. If you want to keep multiple audio formats then use comma's as a separator e.g. --keep-audio-format atmos,dts-hd.")
     commandline_parser.add_argument(u"--keep-orig-file", action=u"store_true",
                                     help=u"Keep original video file, do not overwrite once processed, no value required.")
     commandline_parser.add_argument(u"--dry-run", action=u"store_true",
@@ -366,15 +372,6 @@ if __name__ == '__main__':
 
         delete_title = False
 
-    # audio format that we want to keep, all other audio formats will be removed if a match is found.
-    if args["keep_audio_format"] is not None:
-
-        keep_audio_format_str = args["keep_audio_format"]
-
-    else:
-
-        keep_audio_format_str = None
-
     # if enabled then do not strip out audio
     if args["keep_all_audio"]:
 
@@ -383,6 +380,15 @@ if __name__ == '__main__':
     else:
 
         keep_all_audio = False
+
+    # audio format that we want to keep, all other audio formats will be removed if a match is found.
+    if args["keep_audio_format"] is not None:
+
+        keep_audio_format_str = args["keep_audio_format"]
+
+    else:
+
+        keep_audio_format_str = None
 
     # if enabled then do not strip out subtitles
     if args["keep_all_subtitles"]:
@@ -421,7 +427,6 @@ if __name__ == '__main__':
         logpath = args["logpath"]
 
         if not os.path.exists(logpath):
-
             os.makedirs(logpath)
 
         videoslimmer_logs_file_uni = os.path.join(logpath, u"videoslimmer.log")
@@ -431,7 +436,8 @@ if __name__ == '__main__':
 
         log_level = u"info"
 
-    elif args["loglevel"] == "debug" or args["loglevel"] == "info" or args["loglevel"] == "warning" or args["loglevel"] == "error":
+    elif args["loglevel"] == "debug" or args["loglevel"] == "info" or args["loglevel"] == "warning" or args[
+        "loglevel"] == "error":
 
         log_level = args["loglevel"]
 
