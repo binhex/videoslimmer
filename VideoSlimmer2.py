@@ -175,8 +175,7 @@ def videoslimmer():
             process_dict = identify_tracks(mkvmerge_json_parsed, "subtitles", process_dict)
             vs_log.debug(u"Dictionary to process is '%s'" % process_dict)
 
-            if ("audio_tracks_id_remove" in process_dict and "audio_tracks_id_keep" in process_dict) or (
-                    "subtitles_tracks_id_remove" in process_dict and "subtitles_tracks_id_keep" in process_dict):
+            if "audio_tracks_id_remove" in process_dict or "subtitles_tracks_id_remove" in process_dict:
 
                 if keep_all_audio:
 
@@ -211,6 +210,7 @@ def videoslimmer():
                         subtitles_tracks_id_remove = ""
 
                 temp_output_filename_path = r'%s.tmp' % input_filename_path
+
                 mkvmerge_cmd = r'%s --output "%s" %s %s "%s"' % (mkvmerge_file_path, temp_output_filename_path, audio_tracks_id_remove, subtitles_tracks_id_remove, input_filename_path)
                 vs_log.debug(u"mkvmerge command to execute is '%s'" % mkvmerge_cmd)
 
@@ -219,10 +219,17 @@ def videoslimmer():
                     vs_log.info(u"dry run enabled, command that would of been executed is '%s'" % mkvmerge_cmd)
                     continue
 
+                elif audio_tracks_id_remove == "" and subtitles_tracks_id_remove == "":
+
+                    vs_log.info(u"Skipping processing - file does not have audio or subtitle tracks to remove")
+                    continue
+
                 else:
 
                     mkvmerge_info = subprocess.Popen(mkvmerge_cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
                     mkvmerge_info_stdout, mkvmerge_info_stderr = mkvmerge_info.communicate()
+
+                    vs_log.debug(u"output from mkvmerge is %s" % mkvmerge_info_stdout)
 
                     if mkvmerge_info.returncode != 0:
 
@@ -247,7 +254,7 @@ def videoslimmer():
 
             else:
 
-                vs_log.info(u"Skipping processing - file does not have audio/subtitles tracks to remove|keep")
+                vs_log.info(u"Skipping processing - file does not have audio/subtitles tracks to remove")
                 continue
 
 
