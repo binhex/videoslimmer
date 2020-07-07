@@ -93,11 +93,21 @@ def identify_tracks(mkvmerge_json, track_type, process_dict):
     tracks_id_remove_dict_value_list = []
     tracks_id_keep_dict_value_list = []
 
-    # strip all spaces, tabs, and newlines from string
-    keep_lang_str_strip = ''.join(keep_lang_str.split())
+    if keep_lang_str:
 
-    # create list of languages to keep|remove
-    keep_lang_str_list = keep_lang_str_strip.split(u",")
+        # strip all spaces, tabs, and newlines from string
+        keep_lang_str_strip = ''.join(keep_lang_str.split())
+
+        # create list of languages to keep|remove
+        lang_str_list = keep_lang_str_strip.split(u",")
+
+    else:
+
+        # strip all spaces, tabs, and newlines from string
+        remove_lang_str_strip = ''.join(remove_lang_str.split())
+
+        # create list of languages to keep|remove
+        lang_str_list = remove_lang_str_strip.split(u",")
 
     for i in mkvmerge_json['tracks']:
 
@@ -109,16 +119,31 @@ def identify_tracks(mkvmerge_json, track_type, process_dict):
 
             tracks_language = (i['properties']['language'])
 
-            if tracks_language not in keep_lang_str_list:
+            if keep_lang_str:
 
-                tracks_id_remove_dict_value_list.append(tracks_id)
-                process_dict.update({'%s_tracks_id_remove' % track_type: tracks_id_remove_dict_value_list})
+                if tracks_language not in lang_str_list:
 
-            else:
+                    tracks_id_remove_dict_value_list.append(tracks_id)
+                    process_dict.update({'%s_tracks_id_remove' % track_type: tracks_id_remove_dict_value_list})
 
-                tracks_id_keep_dict_value_list.append(tracks_id)
-                process_dict.update({'%s_tracks_id_keep' % track_type: tracks_id_keep_dict_value_list})
-                process_dict.update({'%s_keep_lang_present' % track_type: 'yes'})
+                else:
+
+                    tracks_id_keep_dict_value_list.append(tracks_id)
+                    process_dict.update({'%s_tracks_id_keep' % track_type: tracks_id_keep_dict_value_list})
+                    process_dict.update({'%s_keep_lang_present' % track_type: 'yes'})
+
+            if remove_lang_str:
+
+                if tracks_language in lang_str_list:
+
+                    tracks_id_remove_dict_value_list.append(tracks_id)
+                    process_dict.update({'%s_tracks_id_remove' % track_type: tracks_id_remove_dict_value_list})
+
+                else:
+
+                    tracks_id_keep_dict_value_list.append(tracks_id)
+                    process_dict.update({'%s_tracks_id_keep' % track_type: tracks_id_keep_dict_value_list})
+                    process_dict.update({'%s_keep_lang_present' % track_type: 'yes'})
 
     return process_dict
 
@@ -207,7 +232,7 @@ def videoslimmer():
 
                     elif keep_orig:
 
-                        output_filename_path = r'%s.new' % input_filename_path
+                        output_filename_path = r'vs-%s' % input_filename_path
                         os.rename(temp_output_filename_path, output_filename_path)
                         vs_log.debug(u"renamed temporary file from '%s' to '%s'" % (temp_output_filename_path, output_filename_path))
 
@@ -366,6 +391,15 @@ if __name__ == '__main__':
 
         delete_title = False
 
+    # if enabled then do not strip out subtitles
+    if args["keep_all_subtitles"]:
+
+        keep_all_subtitles = True
+
+    else:
+
+        keep_all_subtitles = False
+
     # if enabled then do not strip out audio
     if args["keep_all_audio"]:
 
@@ -384,17 +418,8 @@ if __name__ == '__main__':
 
         keep_audio_format_str = None
 
-    # if enabled then do not strip out subtitles
-    if args["keep_all_subtitles"]:
-
-        keep_all_subtitles = True
-
-    else:
-
-        keep_all_subtitles = False
-
     # if enabled then do not overwrite original mkv
-    if args["keep_orig_file"] is not None:
+    if args["keep_orig_file"]:
 
         keep_orig = True
 
@@ -403,7 +428,7 @@ if __name__ == '__main__':
         keep_orig = False
 
     # if enabled then perform dry run
-    if args["dry_run"] is not None:
+    if args["dry_run"]:
 
         dry_run = True
 
