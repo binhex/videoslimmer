@@ -11,12 +11,12 @@ import json
 
 # TODO add in --remove-lang this will remove ONLY these specific languages all others would be kept, cannot be used with --keep-lang so need to check both arent set
 # TODO add in --pref-audio-format specify quality of the audio you would ideally like, this is in conjunction with keep-lang|remove-lanf - if the audio quality found then remove all others, otherwise remove next best
-# TODO edit title is not done
-# TODO delete title not done
 # TODO keep audio format not done
+# TODO bug in metadata - only edits/deletes track name for last track, may need to store track id's with comma's?
 
 
 def videoslimmer_logging():
+
     # setup formatting for log messages
     videoslimmer_formatter = logging.Formatter(u"%(asctime)s %(module)s %(funcName)s :: [%(levelname)s] %(message)s")
 
@@ -24,9 +24,7 @@ def videoslimmer_logging():
     videoslimmer_logger = logging.getLogger(u"videoslimmer")
 
     # add rotating log handler
-    videoslimmer_rotatingfilehandler = logging.handlers.RotatingFileHandler(videoslimmer_logs_file_uni, "a",
-                                                                            maxBytes=10485760, backupCount=3,
-                                                                            encoding="utf-8")
+    videoslimmer_rotatingfilehandler = logging.handlers.RotatingFileHandler(videoslimmer_logs_file_uni, "a", maxBytes=10485760, backupCount=3, encoding="utf-8")
 
     # set formatter for videoslimmer
     videoslimmer_rotatingfilehandler.setFormatter(videoslimmer_formatter)
@@ -73,6 +71,7 @@ def videoslimmer_logging():
 
 
 def mkvmerge_version_check():
+
     mkvmerge_min_version = "31.0.0"
 
     mkvmerge_cmd = r"%s --version" % mkvmerge_file_path
@@ -87,7 +86,56 @@ def mkvmerge_version_check():
         sys.exit(1)
 
 
+def identify_metadata(mkvmerge_json, metadata_name, process_dict):
+
+    try:
+
+        filepath = mkvmerge_json['file_name']
+
+    except KeyError:
+
+        return process_dict
+
+    filename_with_ext = os.path.basename(filepath)
+    filename = os.path.splitext(filename_with_ext)[0]
+    process_dict.update({'filename': filename})
+
+    for i in mkvmerge_json['tracks']:
+
+        try:
+
+            metadata_name_value = (i['properties'][metadata_name])
+
+        except KeyError:
+
+            continue
+
+        if metadata_name_value:
+
+            try:
+
+                track_id = (i['id'])
+
+            except KeyError:
+
+                continue
+
+            if delete_title:
+
+                process_dict.update({'%s_metadata_delete' % metadata_name: '--track-name %s:""' % track_id})
+
+            if edit_title:
+
+                if metadata_name_value != filename:
+
+                    process_dict.update({'%s_metadata_edit' % metadata_name: '--track-name %s:"%s"' % (track_id, filename)})
+
+    vs_log.debug(u"process_dict after identify_metadata is'%s'" % process_dict)
+    return process_dict
+
+
 def identify_tracks(mkvmerge_json, track_type, process_dict):
+
     process_dict.update({'%s_keep_lang_present' % track_type: 'no'})
 
     tracks_id_remove_dict_value_list = []
@@ -98,7 +146,7 @@ def identify_tracks(mkvmerge_json, track_type, process_dict):
         # strip all spaces, tabs, and newlines from string
         keep_lang_str_strip = ''.join(keep_lang_str.split())
 
-        # create list of languages to keep|remove
+        # create list of languages to keep
         lang_str_list = keep_lang_str_strip.split(u",")
 
     else:
@@ -106,18 +154,36 @@ def identify_tracks(mkvmerge_json, track_type, process_dict):
         # strip all spaces, tabs, and newlines from string
         remove_lang_str_strip = ''.join(remove_lang_str.split())
 
-        # create list of languages to keep|remove
+        # create list of languages to remove
         lang_str_list = remove_lang_str_strip.split(u",")
 
     for i in mkvmerge_json['tracks']:
 
-        tracks_type = (i['type'])
+        try:
+
+            tracks_type = (i['type'])
+
+        except KeyError:
+
+            continue
 
         if tracks_type == track_type:
 
-            tracks_id = (i['id'])
+            try:
 
-            tracks_language = (i['properties']['language'])
+                tracks_id = (i['id'])
+
+            except KeyError:
+
+                continue
+
+            try:
+
+                tracks_language = (i['properties']['language'])
+
+            except KeyError:
+
+                continue
 
             if keep_lang_str:
 
@@ -145,10 +211,12 @@ def identify_tracks(mkvmerge_json, track_type, process_dict):
                     process_dict.update({'%s_tracks_id_keep' % track_type: tracks_id_keep_dict_value_list})
                     process_dict.update({'%s_keep_lang_present' % track_type: 'yes'})
 
+    vs_log.debug(u"process_dict after identify_tracks is'%s'" % process_dict)
     return process_dict
 
 
 def videoslimmer():
+
     # walk media root path, convert to byte string before walk
     for root, dirs, files in os.walk(media_root_path_str):
 
@@ -156,7 +224,7 @@ def videoslimmer():
 
             # filter out non mkv files
             if not input_filename.endswith(u".mkv"):
-                vs_log.warning(u"File \"%s\" does not have an mkv extension, skipping file" % input_filename)
+
                 continue
 
             # create full path to media file
@@ -171,57 +239,78 @@ def videoslimmer():
             mkvmerge_info_stdout, mkvmerge_info_stderr = mkvmerge_info.communicate()
             mkvmerge_json_parsed = json.loads(mkvmerge_info_stdout)
 
-            process_dict = identify_tracks(mkvmerge_json_parsed, "audio", process_dict)
-            process_dict = identify_tracks(mkvmerge_json_parsed, "subtitles", process_dict)
+            if keep_all_audio:
+
+                audio_tracks_id_remove = ""
+
+            else:
+
+                process_dict = identify_tracks(mkvmerge_json_parsed, "audio", process_dict)
+
+                try:
+
+                    audio_tracks_id_remove = (process_dict['audio_tracks_id_remove'])
+
+                except KeyError:
+
+                    audio_tracks_id_remove = ''
+
+            if keep_all_subtitles:
+
+                subtitles_tracks_id_remove = ""
+
+            else:
+
+                process_dict = identify_tracks(mkvmerge_json_parsed, "subtitles", process_dict)
+
+                try:
+
+                    subtitles_tracks_id_remove = (process_dict['subtitles_tracks_id_remove'])
+
+                except KeyError:
+
+                    subtitles_tracks_id_remove = ''
+
+            process_dict = identify_metadata(mkvmerge_json_parsed, "track_name", process_dict)
+
             vs_log.debug(u"Dictionary to process is '%s'" % process_dict)
 
-            if "audio_tracks_id_remove" in process_dict or "subtitles_tracks_id_remove" in process_dict:
+            try:
 
-                if keep_all_audio:
+                track_name_metadata_edit = (process_dict['track_name_metadata_edit'])
 
-                    audio_tracks_id_remove = ""
+            except KeyError:
 
-                else:
+                track_name_metadata_edit = ''
 
-                    try:
+            try:
 
-                        audio_tracks_id_remove_list = (process_dict['audio_tracks_id_remove'])
-                        audio_tracks_id_remove = ','.join(str(e) for e in audio_tracks_id_remove_list)
-                        audio_tracks_id_remove = "--audio-tracks !%s" % audio_tracks_id_remove
+                track_name_metadata_delete = (process_dict['track_name_metadata_delete'])
 
-                    except KeyError:
+            except KeyError:
 
-                        audio_tracks_id_remove = ""
+                track_name_metadata_delete = ''
 
-                if keep_all_subtitles:
+            if audio_tracks_id_remove != '' or subtitles_tracks_id_remove != '' or track_name_metadata_edit != '' or track_name_metadata_delete != '':
 
-                    subtitles_tracks_id_remove = ""
+                if audio_tracks_id_remove:
 
-                else:
+                    audio_tracks_id_remove = ','.join(str(e) for e in audio_tracks_id_remove)
+                    audio_tracks_id_remove = "--audio-tracks !%s" % audio_tracks_id_remove
 
-                    try:
+                if subtitles_tracks_id_remove:
 
-                        subtitles_tracks_id_remove_list = (process_dict['subtitles_tracks_id_remove'])
-                        subtitles_tracks_id_remove = ','.join(str(e) for e in subtitles_tracks_id_remove_list)
-                        subtitles_tracks_id_remove = "--subtitle-tracks !%s" % subtitles_tracks_id_remove
-
-                    except KeyError:
-
-                        subtitles_tracks_id_remove = ""
+                    subtitles_tracks_id_remove = ','.join(str(e) for e in subtitles_tracks_id_remove)
+                    subtitles_tracks_id_remove = "--subtitle-tracks !%s" % subtitles_tracks_id_remove
 
                 temp_output_filename_path = r'%s.tmp' % input_filename_path
 
-                mkvmerge_cmd = r'%s --output "%s" %s %s "%s"' % (mkvmerge_file_path, temp_output_filename_path, audio_tracks_id_remove, subtitles_tracks_id_remove, input_filename_path)
+                mkvmerge_cmd = r'%s --output "%s" %s %s %s %s "%s"' % (mkvmerge_file_path, temp_output_filename_path, audio_tracks_id_remove, subtitles_tracks_id_remove, track_name_metadata_edit, track_name_metadata_delete, input_filename_path)
                 vs_log.debug(u"mkvmerge command to execute is '%s'" % mkvmerge_cmd)
 
                 if dry_run:
 
                     vs_log.info(u"dry run enabled, command that would of been executed is '%s'" % mkvmerge_cmd)
-                    continue
-
-                elif audio_tracks_id_remove == "" and subtitles_tracks_id_remove == "":
-
-                    vs_log.info(u"Skipping processing - file does not have audio or subtitle tracks to remove")
                     continue
 
                 else:
@@ -254,7 +343,7 @@ def videoslimmer():
 
             else:
 
-                vs_log.info(u"Skipping processing - file does not have audio/subtitles tracks to remove")
+                vs_log.info(u"Skipping processing - file does not have audio/subtitles/metadata to remove")
                 continue
 
 
@@ -278,6 +367,7 @@ if __name__ == '__main__':
     class ArgparseCustom(argparse.ArgumentParser):
 
         def error(self, message):
+
             sys.stderr.write('\n')
             sys.stderr.write('error: %s\n' % message)
             sys.stderr.write('\n')
@@ -286,9 +376,7 @@ if __name__ == '__main__':
 
 
     # setup argparse description and usage, also increase spacing for help to 50
-    commandline_parser = ArgparseCustom(prog="VideoSlimmer", description="%(prog)s " + videoslimmer_version,
-                                        usage="%(prog)s [--help] --mkvmerge <path> --media <path> --keep-lang <code>|--remove-lang <code> [--edit-title] [--delete-title] [--keep-all-subtitles] [--keep-all-audio] [--keep-audio-format] [--keep-orig-file] [--dry-run yes] [--log <level>] [--logpath <path>] [--version]",
-                                        formatter_class=lambda prog: argparse.HelpFormatter(prog, max_help_position=30))
+    commandline_parser = ArgparseCustom(prog="VideoSlimmer", description="%(prog)s " + videoslimmer_version, usage="%(prog)s [--help] --mkvmerge <path> --media <path> --keep-lang <code>|--remove-lang <code> [--edit-title] [--delete-title] [--keep-all-subtitles] [--keep-all-audio] [--keep-audio-format] [--keep-orig-file] [--dry-run yes] [--log <level>] [--logpath <path>] [--version]", formatter_class=lambda prog: argparse.HelpFormatter(prog, max_help_position=30))
 
     # create mutual exclusion group to force either --kep-lang or --remove-lang to be set, not both
     mutual_exclusion_group = commandline_parser.add_mutually_exclusive_group(required=True)
@@ -341,7 +429,14 @@ if __name__ == '__main__':
     # save media location
     if os.path.exists(args["media"]):
 
-        media_root_path_str = args["media"]
+        if os.path.isfile(args["media"]):
+
+            sys.stderr.write(u"media path specifies a file not a folder")
+            sys.exit()
+
+        else:
+
+            media_root_path_str = args["media"]
 
     else:
 
@@ -357,7 +452,7 @@ if __name__ == '__main__':
 
         else:
 
-            sys.stderr.write(u"language code incorrect length, should be 3 characters")
+            sys.stderr.write(u"language code incorrect length, should be 3 characters, see this link for a full list:- http://en.wikipedia.org/wiki/List_of_ISO_639-2_codes")
             sys.exit()
 
     else:
