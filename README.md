@@ -30,7 +30,7 @@ Examples
 python2 VideoSlimmer.py --mkvmerge /opt/mkvtoolnix/mkvmerge --media /media/movies --lang eng --dry-run no
 ```
 
-<u>Windows    platform</u>    
+<u>Windows    platform</u>  <br/>
 ```
 VideoSlimmer.py --mkvmerge "c:\Program Files\mkvtoolnix\mkvmerge.exe" --media D:\media\movies --lang eng --dry-run no --edit-title yes
 ```
