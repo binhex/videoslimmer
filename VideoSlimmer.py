@@ -76,10 +76,15 @@ def videoslimmer_logging():
 
 def mkvmerge_version_check():
 
-    mkvmerge_min_version = "31.0.0"
+    mkvmerge_min_version = "58.0.0"
 
     mkvmerge_cmd = r"%s --version" % mkvmerge_file_path
-    mkvmerge_info = subprocess.Popen(mkvmerge_cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    mkvmerge_info = subprocess.Popen(
+        mkvmerge_cmd,
+        shell=True,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE
+    )
     mkvmerge_info_stdout, mkvmerge_info_stderr = mkvmerge_info.communicate()
 
     mkmerge_version = re.compile(r'(?<=v)[\d.]+', re.IGNORECASE).search(str(mkvmerge_info_stdout))
@@ -243,7 +248,12 @@ def videoslimmer():
             )
 
             vs_log.debug(u"Command to identify media is '%s'" % mkvmerge_cmd)
-            mkvmerge_info = subprocess.Popen(mkvmerge_cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+            mkvmerge_info = subprocess.Popen(
+                mkvmerge_cmd,
+                shell=True,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE
+            )
             mkvmerge_info_stdout, mkvmerge_info_stderr = mkvmerge_info.communicate()
             mkvmerge_json_parsed = json.loads(mkvmerge_info_stdout)
 
@@ -330,7 +340,12 @@ def videoslimmer():
 
                 else:
 
-                    mkvmerge_info = subprocess.Popen(mkvmerge_cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+                    mkvmerge_info = subprocess.Popen(
+                        mkvmerge_cmd,
+                        shell=True,
+                        stdout=subprocess.PIPE,
+                        stderr=subprocess.PIPE
+                    )
                     mkvmerge_info_stdout, mkvmerge_info_stderr = mkvmerge_info.communicate()
 
                     vs_log.debug(u"output from mkvmerge is %s" % mkvmerge_info_stdout)
@@ -377,6 +392,11 @@ if __name__ == '__main__':
     # define path to videoslimmer logs folder
     videoslimmer_logs_path_uni = os.path.join(videoslimmer_root_path_uni, u"logs")
 
+    # define path to mkvmerge binary
+    videoslimmer_amd64_linux_mkvmerge_path_uni = os.path.join(
+        videoslimmer_root_path_uni, u"static/amd64/mkvtoolnix/linux/mkvmerge"
+    )
+
     # check version of python is 3.0.0 or higher
     if sys.version_info < (3, 0, 0):
         sys.stderr.write(u"videoslimmer requires Python 3.x installed, your running version is %s"), sys.version_info
@@ -419,12 +439,13 @@ if __name__ == '__main__':
 
     # add argparse command line flags
     commandline_parser.add_argument(
-        u"--mkvmerge", metavar=u"<path>", help=r"specify the location of mkvmerge, if not specified then the path will "
-                                               r"be used e.g. --mkvmerge 'c:\Program Files\mkvtoolnix\mkvmerge.exe'."
+        u"--mkvmerge", metavar=u"<path>", help=r"specify the location of mkvmerge e.g. --mkvmerge "
+                                               r"'C:\Program Files\mkvtoolnix\mkvmerge.exe'. If path isn't specified "
+                                               r"then the included statically built mkvmerge will be used."
     )
     commandline_parser.add_argument(
         u"--media", metavar=u"<path>", required=True, help=r"specify the path to your media e.g. --media "
-                                                           r"'c:\media\movies'."
+                                                           r"'C:\media\movies'."
     )
     mutual_exclusion_group.add_argument(
         u"--keep-lang", metavar=u"<code>", help=r"specify the language(s) you want to keep, all other languages will "
@@ -452,21 +473,21 @@ if __name__ == '__main__':
         u"--keep-all-audio", action=u"store_true", help=r"Keep all audio regardless of language, no value required."
     )
     commandline_parser.add_argument(
-        u"--keep-audio-format", metavar=u"yes", help=r"audio format that we want to keep, all other audio formats will "
-                                                     r"be removed if a match is found. If you want to keep multiple "
-                                                     r"audio formats then use comma's as a separator e.g. "
-                                                     r"--keep-audio-format atmos,dts-hd."
+        u"--keep-audio-format", metavar=u"<format>", help=r"keep specified audio formats, all other audio formats "
+                                                          r"will be removed. If you want to keep multiple audio "
+                                                          r"formats then use comma's as a separator e.g. "
+                                                          r"--keep-audio-format atmos,dts-hd."
     )
     commandline_parser.add_argument(
         u"--keep-orig-file", action=u"store_true", help=r"Keep original video file, do not overwrite once processed, "
                                                         r"no value required."
     )
     commandline_parser.add_argument(
-        u"--dry-run", action=u"store_true", help=r"specify whether you want to perform a dry run, no value required."
+        u"--dry-run",  action=u"store_true", help=r"specify whether you want to perform a dry run, no value required."
     )
     commandline_parser.add_argument(
         u"--logpath", metavar=u"<path>", help=r"specify the path to your log files e.g. --logpath "
-                                              r"'c:\\videoslimmer\\logs'."
+                                              r"'C:\videoslimmer\logs'."
     )
     commandline_parser.add_argument(
         u"--loglevel", metavar=u"<level>", help=r"specify the logging level, valid values are "
@@ -482,7 +503,7 @@ if __name__ == '__main__':
 
     if args["mkvmerge"] is None:
 
-        mkvmerge_file_path = "mkvmerge"
+        mkvmerge_file_path = videoslimmer_amd64_linux_mkvmerge_path_uni
 
     elif os.path.exists(args["mkvmerge"]):
 
