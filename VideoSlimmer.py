@@ -418,6 +418,7 @@ if __name__ == '__main__':
     commandline_parser = ArgparseCustom(
         prog="VideoSlimmer",
         description="%(prog)s " + videoslimmer_version,
+        epilog="Language codes can be found at: http://en.wikipedia.org/wiki/List_of_ISO_639-2_codes",
         usage="%(prog)s [--help] "
               "--mkvmerge <path> --media <path> "
               "--keep-lang <code>|"
@@ -428,7 +429,7 @@ if __name__ == '__main__':
               "[--keep-all-audio] "
               "[--keep-audio-format] "
               "[--keep-orig-file] "
-              "[--dry-run yes] "
+              "[--dry-run] "
               "[--log <level>] "
               "[--logpath <path>] "
               "[--version]",
@@ -444,7 +445,8 @@ if __name__ == '__main__':
                                                r"then the included statically built mkvmerge will be used."
     )
     commandline_parser.add_argument(
-        u"--media", metavar=u"<path>", required=True, help=r"specify the path to your media e.g. --media "
+        u"--media", metavar=u"<path>", required=True, help=r"specify the path to your media, note only mkv container "
+                                                           r"format is currently supported e.g. --media "
                                                            r"'C:\media\movies'."
     )
     mutual_exclusion_group.add_argument(
@@ -458,12 +460,12 @@ if __name__ == '__main__':
                                                   r"comma's as a separator e.g. --remove-lang fra,eng."
     )
     commandline_parser.add_argument(
-        u"--edit-title", metavar=u"yes", help=r"specify whether you want to change the title metadata to match the "
-                                              r"filename, no value required."
+        u"--edit-title", action=u"store_true", help=r"specify whether you want to change the title metadata to match "
+                                                    r"the filename, no value required."
     )
     commandline_parser.add_argument(
-        u"--delete-title", metavar=u"yes", help=r"specify whether you want to delete the title metadata, no value "
-                                                r"required."
+        u"--delete-title", action=u"store_true", help=r"specify whether you want to delete the title metadata, no "
+                                                      r"value required."
     )
     commandline_parser.add_argument(
         u"--keep-all-subtitles", action=u"store_true", help=r"Keep all subtitles regardless of language, no value "
@@ -567,7 +569,7 @@ if __name__ == '__main__':
         remove_lang_str = None
 
     # if enabled then edit metadata "title" field to filename minus extension
-    if args["edit_title"] is not None:
+    if args["edit_title"]:
 
         edit_title = True
 
@@ -576,7 +578,7 @@ if __name__ == '__main__':
         edit_title = False
 
     # if enabled then delete metadata in "title" field
-    if args["delete_title"] is not None:
+    if args["delete_title"]:
 
         delete_title = True
 
