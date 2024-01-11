@@ -9,13 +9,10 @@ from distutils.version import StrictVersion
 import argparse
 import json
 
-# TODO add in --remove-lang this will remove ONLY these specific languages all others would be kept, cannot be used
-#  with --keep-lang so need to check both arent set
 # TODO add in --pref-audio-format specify quality of the audio you would ideally like, this is in conjunction with
 #  keep-lang|remove-lang - if the audio quality found then remove all others, otherwise remove next best
 # TODO keep audio format not done
 # TODO bug in metadata - only edits/deletes track name for last track, may need to store track id's with comma's?
-
 
 def videoslimmer_logging():
 
