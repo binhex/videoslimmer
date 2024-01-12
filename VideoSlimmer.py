@@ -85,10 +85,10 @@ def mkvmerge_version_check():
     )
     mkvmerge_info_stdout, mkvmerge_info_stderr = mkvmerge_info.communicate()
 
-    mkmerge_version = re.compile(r'(?<=v)[\d.]+', re.IGNORECASE).search(str(mkvmerge_info_stdout))
+    mkvmerge_version = re.compile(r'(?<=v)[\d.]+', re.IGNORECASE).search(str(mkvmerge_info_stdout))
 
     # if min version not met, then exit
-    if packaging.version.Version(mkmerge_version.group()) < packaging.version.Version(mkvmerge_min_version):
+    if packaging.version.Version(mkvmerge_version.group()) < packaging.version.Version(mkvmerge_min_version):
         sys.stderr.write(u"mkvmerge version is less than %s, please upgrade" % mkvmerge_min_version)
         sys.exit(1)
 
