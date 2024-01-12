@@ -5,7 +5,7 @@ import logging
 import logging.handlers
 import re
 import subprocess
-from distutils.version import StrictVersion
+import packaging.version
 import argparse
 import json
 
@@ -13,6 +13,7 @@ import json
 #  keep-lang|remove-lang - if the audio quality found then remove all others, otherwise remove next best
 # TODO keep audio format not done
 # TODO bug in metadata - only edits/deletes track name for last track, may need to store track id's with comma's?
+
 
 def videoslimmer_logging():
 
@@ -87,7 +88,7 @@ def mkvmerge_version_check():
     mkmerge_version = re.compile(r'(?<=v)[\d.]+', re.IGNORECASE).search(str(mkvmerge_info_stdout))
 
     # if min version not met, then exit
-    if StrictVersion(mkmerge_version.group()) < StrictVersion(mkvmerge_min_version):
+    if packaging.version.Version(mkmerge_version.group()) < packaging.version.Version(mkvmerge_min_version):
         sys.stderr.write(u"mkvmerge version is less than %s, please upgrade" % mkvmerge_min_version)
         sys.exit(1)
 
@@ -231,12 +232,12 @@ def videoslimmer():
 
             # filter out non mkv files
             if not input_filename.endswith(u".mkv"):
-
+                vs_log.debug(f"Skipping file '{input_filename}' as it is not a Matroska container formatted file")
                 continue
 
             # create full path to media file
             input_filename_path = os.path.join(root, input_filename)
-            vs_log.info(u"Analysing file path '%s' using mkvmerge..." % input_filename_path)
+            vs_log.info(u"Analysing file at path '%s' using mkvmerge..." % input_filename_path)
 
             process_dict = {}
 
@@ -256,7 +257,7 @@ def videoslimmer():
 
             if keep_all_audio:
 
-                audio_tracks_id_remove = ""
+                audio_tracks_id_remove = None
 
             else:
 
@@ -268,11 +269,11 @@ def videoslimmer():
 
                 except KeyError:
 
-                    audio_tracks_id_remove = ''
+                    audio_tracks_id_remove = None
 
             if keep_all_subtitles:
 
-                subtitles_tracks_id_remove = ""
+                subtitles_tracks_id_remove = None
 
             else:
 
@@ -284,7 +285,7 @@ def videoslimmer():
 
                 except KeyError:
 
-                    subtitles_tracks_id_remove = ''
+                    subtitles_tracks_id_remove = None
 
             process_dict = identify_metadata(mkvmerge_json_parsed, "track_name", process_dict)
 
@@ -296,7 +297,7 @@ def videoslimmer():
 
             except KeyError:
 
-                track_name_metadata_edit = ''
+                track_name_metadata_edit = None
 
             try:
 
@@ -304,12 +305,12 @@ def videoslimmer():
 
             except KeyError:
 
-                track_name_metadata_delete = ''
+                track_name_metadata_delete = None
 
-            if audio_tracks_id_remove != '' or \
-                    subtitles_tracks_id_remove != '' or \
-                    track_name_metadata_edit != '' or \
-                    track_name_metadata_delete != '':
+            if audio_tracks_id_remove is not None or \
+                    subtitles_tracks_id_remove is not None or \
+                    track_name_metadata_edit is not None or \
+                    track_name_metadata_delete is not None:
 
                 if audio_tracks_id_remove:
 
@@ -374,7 +375,8 @@ def videoslimmer():
 
             else:
 
-                vs_log.info(u"Skipping processing - file does not have audio/subtitles/metadata to remove")
+                vs_log.info(f"Skipping processing, '{input_filename}' does not have audio, subtitles, or metadata to "
+                            f"remove")
                 continue
 
 
