@@ -396,9 +396,9 @@ if __name__ == '__main__':
         videoslimmer_root_path_uni, u"static/amd64/mkvtoolnix/linux/mkvmerge"
     )
 
-    # check version of python is 3.0.0 or higher
-    if sys.version_info < (3, 0, 0):
-        sys.stderr.write(u"videoslimmer requires Python 3.x installed, your running version is %s"), sys.version_info
+    # check version of python is 3.8.0 or higher
+    if sys.version_info < (3, 8, 0):
+        sys.stderr.write(u"videoslimmer requires Python 3.8.0 or later, your running version is %s"), sys.version_info
         sys.exit()
 
     # custom argparse to redirect user to help if unknown argument specified
