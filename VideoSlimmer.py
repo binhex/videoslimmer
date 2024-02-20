@@ -269,11 +269,11 @@ def videoslimmer():
 
                 except KeyError:
 
-                    audio_tracks_id_remove = None
+                    audio_tracks_id_remove = ''
 
             if keep_all_subtitles:
 
-                subtitles_tracks_id_remove = None
+                subtitles_tracks_id_remove = ''
 
             else:
 
@@ -285,7 +285,7 @@ def videoslimmer():
 
                 except KeyError:
 
-                    subtitles_tracks_id_remove = None
+                    subtitles_tracks_id_remove = ''
 
             process_dict = identify_metadata(mkvmerge_json_parsed, "track_name", process_dict)
 
@@ -297,7 +297,7 @@ def videoslimmer():
 
             except KeyError:
 
-                track_name_metadata_edit = None
+                track_name_metadata_edit = ''
 
             try:
 
@@ -305,12 +305,9 @@ def videoslimmer():
 
             except KeyError:
 
-                track_name_metadata_delete = None
+                track_name_metadata_delete = ''
 
-            if audio_tracks_id_remove is not None or \
-                    subtitles_tracks_id_remove is not None or \
-                    track_name_metadata_edit is not None or \
-                    track_name_metadata_delete is not None:
+            if audio_tracks_id_remove or subtitles_tracks_id_remove or track_name_metadata_edit or track_name_metadata_delete:
 
                 if audio_tracks_id_remove:
 
@@ -549,7 +546,7 @@ if __name__ == '__main__':
 
     else:
 
-        keep_lang_str = None
+        keep_lang_str = ''
 
     # define languages we want to remove only, all other languages will be kept
     if args["remove_lang"] is not None:
@@ -565,7 +562,7 @@ if __name__ == '__main__':
 
     else:
 
-        remove_lang_str = None
+        remove_lang_str = ''
 
     # if enabled then edit metadata "title" field to filename minus extension
     if args["edit_title"]:
@@ -610,7 +607,7 @@ if __name__ == '__main__':
 
     else:
 
-        keep_audio_format_str = None
+        keep_audio_format_str = ''
 
     # if enabled then do not overwrite original mkv
     if args["keep_orig_file"]:
