@@ -409,7 +409,6 @@ if __name__ == '__main__':
             self.print_help()
             sys.exit(2)
 
-
     # setup argparse description and usage, also increase spacing for help to 50
     commandline_parser = ArgparseCustom(
         prog="VideoSlimmer",
@@ -600,14 +599,14 @@ if __name__ == '__main__':
 
         keep_all_audio = False
 
-    # audio format that we want to keep, all other audio formats will be removed if a match is found.
-    if args["keep_audio_format"] is not None:
+    # if enabled then perform dry run
+    if args["dry_run"]:
 
-        keep_audio_format_str = args["keep_audio_format"]
+        dry_run = True
 
     else:
 
-        keep_audio_format_str = ''
+        dry_run = False
 
     # if enabled then do not overwrite original mkv
     if args["keep_orig_file"]:
@@ -618,15 +617,14 @@ if __name__ == '__main__':
 
         keep_orig = False
 
-    # if enabled then perform dry run
-    if args["dry_run"]:
+    # audio format that we want to keep, all other audio formats will be removed if a match is found.
+    if args["keep_audio_format"] is not None:
 
-        dry_run = True
+        keep_audio_format_str = args["keep_audio_format"]
 
     else:
 
-        dry_run = False
-
+        keep_audio_format_str = ''
     # save log path
     if args["logpath"] is None:
 
