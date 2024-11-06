@@ -9,10 +9,12 @@ import packaging.version
 import argparse
 import json
 
-# TODO add in --pref-audio-format specify quality of the audio you would ideally like, this is in conjunction with
-#  keep-lang|remove-lang - if the audio quality found then remove all others, otherwise remove next best
-# TODO keep audio format not done
-# TODO bug in metadata - only edits/deletes track name for last track, may need to store track id's with comma's?
+# TODO feature - if keep-lang|remove-lang specified and multiple audio tracks found then remove lowest quality first
+# TODO todo - keep audio format not done
+# TODO bug - only edits/deletes track name for last track, may need to store track id's with comma's?
+# TODO feature - add option to clear 'track nane' for video stream only
+# TODO bug - ensure if only one audio stream left after strip then set as 'default track'
+# TODO bug - when --delete-title optioon is specified then a remux always occurs even if not required.
 
 
 def videoslimmer_logging():
@@ -307,7 +309,12 @@ def videoslimmer():
 
                 track_name_metadata_delete = ''
 
-            if audio_tracks_id_remove or subtitles_tracks_id_remove or track_name_metadata_edit or track_name_metadata_delete:
+            if (
+                audio_tracks_id_remove or
+                subtitles_tracks_id_remove or
+                track_name_metadata_edit or
+                track_name_metadata_delete
+            ):
 
                 if audio_tracks_id_remove:
 
