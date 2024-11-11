@@ -15,6 +15,7 @@ import json
 # TODO feature - add option to clear 'track nane' for video stream only
 # TODO bug - ensure if only one audio stream left after strip then set as 'default track'
 # TODO bug - when --delete-title optioon is specified then a remux always occurs even if not required.
+# TODO bug - if operation not permitted then cleanup tmp file
 
 
 def videoslimmer_logging():
@@ -369,8 +370,14 @@ def videoslimmer():
                     else:
 
                         output_filename_path = input_filename_path
-                        os.remove(input_filename_path)
-                        vs_log.debug(u"removed source file '%s'" % input_filename_path)
+                        try:
+                            os.remove(input_filename_path)
+                            vs_log.debug(u"removed source file '%s'" % input_filename_path)
+                        except PermissionError:
+                            vs_log.warning(f"failed to remove source file '{input_filename_path}' due to permissions"
+                                           f" error, deleting temporary file {temp_output_filename_path} and exiting...")
+                            os.remove(temp_output_filename_path)
+                            sys.exit()
 
                         os.rename(temp_output_filename_path, output_filename_path)
                         vs_log.debug(u"renamed temporary file from '%s' to '%s'" % (
